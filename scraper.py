@@ -35,13 +35,13 @@ def fetch_pokemon_data(name: str):
     base_stats = {}
 
     if attribute_tables:
-        stats_section = attribute_tables[1].find('tbody')
+        stats_section = attribute_tables[3].find('tbody')
         if stats_section:
             for row in stats_section.find_all('tr'):
                 stat_name = row.find('th').text.strip() if row.find('th') else None
                 stat_value = row.find('td', class_='cell-num')
                 if stat_name and stat_value:
-                    stat_value = stat_value[0].text.strip()
+                    stat_value = stat_value.text.strip()
                     base_stats[stat_name] = int(stat_value)
 
     # Extracting Total BST from the <tfoot> section
@@ -53,11 +53,11 @@ def fetch_pokemon_data(name: str):
             bst = int(bst_td.text.strip())
 
     # Print the extracted data for testing
-    print("Types:", types)
-    print("Base Stats:", base_stats)
-    print("BST:", bst)
+    # print("Types:", types)
+    # print("Base Stats:", base_stats)
+    # print("BST:", bst)
 
     return {"types": types, "base_stats": base_stats, "bst": bst}
 
 # Test the scraper for Tepig
-pokemon_data = fetch_pokemon_data('tepig')
+# pokemon_data = fetch_pokemon_data('tepig')

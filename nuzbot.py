@@ -3,17 +3,7 @@ from disc_token import TOKEN
 from discord.ext import commands
 from discord_slash import SlashCommand
 from discord_slash.utils.manage_commands import SlashCommandOptionType
-from database import (
-    initialize_database,
-    add_pokemon,
-    get_active_run,
-    select_run,
-    add_run,
-    list_runs,
-    get_pokemon_by_run,
-    update_pokemon_status,
-    calculate_point_value,
-)
+from database import *
 from scraper import fetch_pokemon_data
 
 # Create an instance of the bot
@@ -42,6 +32,7 @@ async def on_ready():
             "required": True,
             "choices": [
                 {"name": "add", "value": "add"},
+                {"name": "delete", "value": "delete"},
                 {"name": "select", "value": "select"},
                 {"name": "list", "value": "list"},
                 {"name": "view", "value": "view"}
@@ -69,6 +60,13 @@ async def _run(ctx, action, name=None, generation=None):
             return
         await add_run(name, generation)
         await ctx.send(f"Run '{name}' for generation '{generation}' added.")
+
+    elif action.lower() == "delete":
+        if not name:
+            await ctx.send("Usage: `/run delete <name>`")
+            return
+        await delete_run(name)
+        await ctx.send(f"Run '{name}' deleted.")
 
     elif action.lower() == "select":
         if not name:
@@ -98,13 +96,14 @@ async def _run(ctx, action, name=None, generation=None):
             [
                 f"Name: {p['name']}, Route: {p['route']}, BST: {p['bst']}, "
                 f"Points: {p['points']}, Status: {p['status']}"
+                # Recognized issue: TypeError: tuple indices must be integers or slices, not str
                 for p in pokemon
             ]
         )
         await ctx.send(f"Pokémon for run '{run_name}':\n{response}")
 
     else:
-        await ctx.send("Invalid action. Use `/run add`, `/run select`, `/run list`, or `/run view`.")
+        await ctx.send("Invalid action. Use `/run add`, `/run delete`, `/run select`, `/run list`, or `/run view`.")
 
 
 @slash.slash(
@@ -132,7 +131,7 @@ async def _add(ctx, name: str, route: str):
         await ctx.send("No active run. Use `/run select <name>` to select one.")
         return
 
-    pokemon_data = await fetch_pokemon_data(name)
+    pokemon_data = fetch_pokemon_data(name)
     if not pokemon_data:
         await ctx.send(f"Could not find data for Pokémon '{name}'.")
         return

@@ -60,12 +60,13 @@ async def initialize_database():
 
 
 # Add a new Pokémon to the database
-async def add_pokemon(name, form, route, bst, points, run_name):
+# Omitting 'form' parameter to match the current nuzbot.py
+async def add_pokemon(name, route, bst, points, run_name):
     async with aiosqlite.connect(DATABASE_FILE) as db:
         await db.execute("""
-            INSERT INTO pokemon (name, form, route, bst, points, status, run)
-            VALUES (?, ?, ?, ?, ?, 'Alive', ?)
-        """, (name, form, route, bst, points, run_name))
+            INSERT INTO pokemon (name, route, bst, points, status, run)
+            VALUES (?, ?, ?, ?, 'Alive', ?)
+        """, (name, route, bst, points, run_name))
         await db.commit()
 
 
@@ -92,6 +93,14 @@ async def add_run(run_name, generation):
             INSERT INTO runs (name, generation)
             VALUES (?, ?)
         """, (run_name, generation))
+        await db.commit()
+
+
+# Delete a run from the database
+async def delete_run(run_name):
+    async with aiosqlite.connect(DATABASE_FILE) as db:
+        await db.execute("DELETE FROM runs WHERE name = ?", (run_name,))
+        await db.execute("DELETE FROM pokemon WHERE run = ?", (run_name,))
         await db.commit()
 
 
